@@ -364,6 +364,13 @@ sudo apt-get install needrestart
 # Performs a check and provide information on processes that need a restart
 sudo needrestart -r -a 
 
+
+# Informing of the following occurences
+echo "Handling known issues:"
+
+chmod +x services.sh
+./services.sh
+
 echo "Security configurations applied successfully!"
 
 # analyze processes and save the results in top.log
