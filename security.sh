@@ -361,10 +361,6 @@ sudo apt-get install needrestart
     # man needrestart                                               // typical man page
 
 
-# Performs a check and provide information on processes that need a restart
-sudo needrestart -r 
-
-
 # Informing of the following occurences
 echo "Handling known issues:"
 
@@ -380,3 +376,14 @@ top -n 1 -b > top.log
 echo "Different Users running processes:"
 awk '{if(NR>7)print $2}' top.log | sort | uniq
 
+# Ask the user if they want to restart needed services
+read -p "Do you want to restart needed services? (y/n): " answer
+
+# Check the user's response
+if [ "$answer" == "y" ]; then
+    # Command to restart needed services
+    sudo needrestart -r
+    echo "Services restarted successfully."
+else
+    echo "Please check for services needing restart later."
+fi
