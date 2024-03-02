@@ -232,11 +232,22 @@ while pkill -0 -f freshclam &>/dev/null; do
     sleep 5
 done
 
+# Check if clamav-daemon package is installed
+if ! dpkg -l | grep -q 'clamav-daemon'; then
+    # Install clamav-daemon if not already installed
+    sudo apt-get install -y clamav-daemon
+    if [ $? -ne 0 ]; then
+        echo "Error: Unable to install clamav-daemon. Please check your internet connection and try again."
+        exit 1
+    fi
+fi
+
 # Manually update the virus databases for ClamAV on a Linux system
 if sudo freshclam; then
     echo "Virus databases updated successfully."
 else
     echo "Error updating virus databases for ClamAV."
+    exit 1
 fi
 
 # Check if clamav-daemon service is active
@@ -246,15 +257,10 @@ if [ "$(systemctl is-active clamav-daemon)" = "active" ]; then
     echo "ClamAV service stopped."
 fi
 
-# Check if clamav-daemon package is installed
-if ! dpkg -l | grep -q 'clamav-daemon'; then
-    echo "Error: clamav-daemon package not found. Please check your installation."
-else
-    # Enable and start clamav-daemon service
-    sudo systemctl enable clamav-daemon
-    sudo systemctl start clamav-daemon
-    echo "ClamAV service enabled and started."
-fi
+# Enable and start clamav-daemon service
+sudo systemctl enable clamav-daemon
+sudo systemctl start clamav-daemon
+echo "ClamAV service enabled and started."
 
 
 # Configure secure remote access (SSH):
