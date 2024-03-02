@@ -70,10 +70,11 @@ stop_and_disable_service "cups"
 # Fix dbus.service (UNSAFE)
 stop_and_disable_service "dbus"
 
+: <<'COMMENT'
 # Fix emergency.service (UNSAFE)
 stop_and_disable_service "emergency"
 
-: <<'COMMENT'
+
 # Fix fail2ban.service (UNSAFE)
 # stop_and_disable_service "fail2ban"
 
