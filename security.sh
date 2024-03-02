@@ -63,6 +63,10 @@ sudo apt-get install -y libpam-pwquality
 # Dynamically determine the SSH service name
 SSH_SERVICE=$(systemctl list-units --type=service | grep -oE 'ssh[a-zA-Z0-9._-]*\.service')
 
+
+# Debug output
+echo "SSH_SERVICE: $SSH_SERVICE"
+
 # Check if the SSH service name is found
 if [ -z "$SSH_SERVICE" ]; then
     echo "SSH service not found."
@@ -83,12 +87,14 @@ sudo sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/' /etc/ssh/s
 # Restart the SSH service using the dynamically determined name
 sudo systemctl restart "$SSH_SERVICE"
 
-# Check if the restart was successful
-if [ $? -ne 0 ]; then
-    echo "Failed to restart SSH service: $SSH_SERVICE"
+    # Check if the restart was successful
+    if [ $? -ne 0 ]; then
+        echo "Failed to restart SSH service: $SSH_SERVICE"
+    else
+        echo "SSH service ($SSH_SERVICE) restarted successfully."
+    fi
 fi
 
-echo "SSH service ($SSH_SERVICE) restarted successfully."
 
 # Implement fail2ban for intrusion prevention
 sudo apt-get install -y fail2ban
