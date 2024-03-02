@@ -136,7 +136,6 @@ sudo systemctl restart "$RSYSLOG_SERVICE"
     else
         echo "SSH service ($SSH_SERVICE) restarted successfully."
     fi
-fi
 
 # Enable and configure system logging
 sudo systemctl enable rsyslog
