@@ -223,18 +223,26 @@ sudo freshclam
 
 
 
-# Install and configure antivirus/antimalware software
-sudo apt-get install -y clamav
-
 # Manually update the virus databases for ClamAV on a Linux system
-sudo freshclam
+if sudo freshclam; then
+    echo "Virus databases updated successfully."
+else
+    echo "Error updating virus databases for ClamAV."
+fi
+
+# Check if clamav-daemon service is active
+if [ "$(systemctl is-active clamav-daemon)" = "active" ]; then
+    # Stop clamav-daemon service if it's active
+    sudo systemctl stop clamav-daemon
+    echo "ClamAV service stopped."
+fi
 
 # Check if clamav-daemon service exists
 if systemctl list-unit-files | grep -q 'clamav-daemon.service'; then
     # Enable and start clamav-daemon service
     sudo systemctl enable clamav-daemon
     sudo systemctl start clamav-daemon
-    echo "clamav-daemon service enabled and started."
+    echo "ClamAV service enabled and started."
 else
     echo "Error: clamav-daemon service not found. Please check your installation."
 fi
