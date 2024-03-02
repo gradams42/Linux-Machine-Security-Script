@@ -251,3 +251,11 @@ sudo systemctl start clamav-daemon
 
 
 echo "Security configurations applied successfully!"
+
+# analyze processes and save the results in top.log
+top -n 1 -b > top.log
+
+# Display different users in the top.log file
+echo "Different Users in top.log:"
+awk '{if(NR>7)print $2}' top.log | sort | uniq
+
