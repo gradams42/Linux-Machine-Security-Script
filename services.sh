@@ -66,13 +66,14 @@ stop_and_disable_service "cups-browsed"
 # Fix cups.service (UNSAFE)
 stop_and_disable_service "cups"
 
-: <<'COMMENT'
+
 # Fix dbus.service (UNSAFE)
 stop_and_disable_service "dbus"
 
 # Fix emergency.service (UNSAFE)
 stop_and_disable_service "emergency"
 
+: <<'COMMENT'
 # Fix fail2ban.service (UNSAFE)
 # stop_and_disable_service "fail2ban"
 
