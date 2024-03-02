@@ -362,7 +362,7 @@ sudo apt-get install needrestart
 
 
 # Performs a check and provide information on processes that need a restart
-sudo needrestart -r -a 
+sudo needrestart -r 
 
 
 # Informing of the following occurences
