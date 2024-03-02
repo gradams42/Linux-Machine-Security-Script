@@ -246,48 +246,15 @@ if [ "$(systemctl is-active clamav-daemon)" = "active" ]; then
     echo "ClamAV service stopped."
 fi
 
-# Check if clamav-daemon service exists
-if systemctl list-unit-files | grep -q 'clamav-daemon.service'; then
+# Check if clamav-daemon package is installed
+if ! dpkg -l | grep -q 'clamav-daemon'; then
+    echo "Error: clamav-daemon package not found. Please check your installation."
+else
     # Enable and start clamav-daemon service
     sudo systemctl enable clamav-daemon
     sudo systemctl start clamav-daemon
     echo "ClamAV service enabled and started."
-else
-    echo "Error: clamav-daemon service not found. Please check your installation."
 fi
-
-
-# Configure ClamAV service
-CLAMAV_SERVICE=$(systemctl list-units --type=service | grep -oE 'clamav[a-zA-Z0-9._-]*\.service')
-
-# Debug output
-echo "CLAMAV_SERVICE: $CLAMAV_SERVICE"
-
-# Check if the ClamAV service name is found
-if [ -z "$CLAMAV_SERVICE" ]; then
-    echo "ClamAV service not found."
-else
-    # Check if the ClamAV configuration file exists
-    CLAMAV_CONFIG_FILE="/etc/clamav/clamd.conf"
-    if [ -e "$CLAMAV_CONFIG_FILE" ]; then
-        # Find a line containing "LocalSocket" in the /etc/clamav/clamd.conf file and replace its value with "LocalSocket /var/run/clamav/clamd.ctl".
-        sudo sed -i 's/^LocalSocket .*/LocalSocket \/var\/run\/clamav\/clamd.ctl/' "$CLAMAV_CONFIG_FILE"
-
-        # Restart the ClamAV service using the dynamically determined name
-        sudo systemctl restart "$CLAMAV_SERVICE"
-
-        # Check if the restart was successful
-        if [ $? -ne 0 ]; then
-            echo "Failed to restart ClamAV service: $CLAMAV_SERVICE"
-        else
-            echo "ClamAV service ($CLAMAV_SERVICE) restarted successfully."
-        fi
-    else
-        echo "ClamAV configuration file not found: $CLAMAV_CONFIG_FILE"
-    fi
-fi
-
-
 
 
 # Configure secure remote access (SSH):
