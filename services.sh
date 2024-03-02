@@ -54,13 +54,13 @@ stop_and_disable_service "avahi-daemon"
 # stop_and_disable_service "clamav-daemon"
 
 
-: <<'COMMENT'
 # Fix colord.service (EXPOSED)
 stop_and_disable_service "colord"
 
 # Fix cron.service (UNSAFE)
 stop_and_disable_service "cron"
 
+: <<'COMMENT'
 # Fix cups-browsed.service (UNSAFE)
 stop_and_disable_service "cups-browsed"
 
