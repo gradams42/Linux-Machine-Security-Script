@@ -223,18 +223,52 @@ sudo freshclam
 
 
 
-# clamav-freshclam service will be set to start automatically whenever the system boots up
-sudo systemctl enable clamav-freshclam
+# Install and configure antivirus/antimalware software
+sudo apt-get install -y clamav
+
+# Manually update the virus databases for ClamAV on a Linux system
+sudo freshclam
 
 # Check if clamav-daemon service exists
-if systemctl list-unit-files | grep -q 'clamav-freshclam.service'; then
+if systemctl list-unit-files | grep -q 'clamav-daemon.service'; then
     # Enable and start clamav-daemon service
-    sudo systemctl enable clamav-freshclam
-    sudo systemctl start clamav-freshclam
-    echo "clamav-freshclam service enabled and started."
+    sudo systemctl enable clamav-daemon
+    sudo systemctl start clamav-daemon
+    echo "clamav-daemon service enabled and started."
 else
-    echo "Error: clamav-freshclam service not found. Please check your installation."
+    echo "Error: clamav-daemon service not found. Please check your installation."
 fi
+
+# Configure ClamAV service
+CLAMAV_SERVICE=$(systemctl list-units --type=service | grep -oE 'clamav[a-zA-Z0-9._-]*\.service')
+
+# Debug output
+echo "CLAMAV_SERVICE: $CLAMAV_SERVICE"
+
+# Check if the ClamAV service name is found
+if [ -z "$CLAMAV_SERVICE" ]; then
+    echo "ClamAV service not found."
+else
+    # Check if the ClamAV configuration file exists
+    CLAMAV_CONFIG_FILE="/etc/clamav/clamd.conf"
+    if [ -e "$CLAMAV_CONFIG_FILE" ]; then
+        # Find a line containing "LocalSocket" in the /etc/clamav/clamd.conf file and replace its value with "LocalSocket /var/run/clamav/clamd.ctl".
+        sudo sed -i 's/^LocalSocket .*/LocalSocket \/var\/run\/clamav\/clamd.ctl/' "$CLAMAV_CONFIG_FILE"
+
+        # Restart the ClamAV service using the dynamically determined name
+        sudo systemctl restart "$CLAMAV_SERVICE"
+
+        # Check if the restart was successful
+        if [ $? -ne 0 ]; then
+            echo "Failed to restart ClamAV service: $CLAMAV_SERVICE"
+        else
+            echo "ClamAV service ($CLAMAV_SERVICE) restarted successfully."
+        fi
+    else
+        echo "ClamAV configuration file not found: $CLAMAV_CONFIG_FILE"
+    fi
+fi
+
 
 
 
