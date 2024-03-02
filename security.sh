@@ -73,6 +73,18 @@ sudo ufw enable
 
 # Enforce strong password policies
 sudo apt-get install -y libpam-pwquality
+
+
+# Allows for the creation and usage of per-user temporary directories 
+# during a user's session. It dynamically creates a 
+# private temporary directory for each user upon login and sets the appropriate environment variables.
+# Conforms with popular security policies
+sudo apt-get install -y libpam-tmpdir
+
+# remembering the last 5 passwords and preventing users from reusing them. The use_authtok option instructs
+# PAM to use the authentication token obtained during the password change for subsequent module invocations.
+sudo sed -i '/password.*pam_unix.so/s/$/ use_authtok remember=5/' /etc/pam.d/common-password
+
 ## HOW TO USE THIS IN DEPTH:
     # sudo nano /etc/security/pwquality.conf              // to edit the configuration file
     # minlen = 8                                          // Specifies the minimum length for user passwords
@@ -92,6 +104,30 @@ sudo apt-get install -y libpam-pwquality
     # passwd                                              // test the password quality requirements by changing user password
     # sudo apt-get install -y libpam-tester               // To check the status of PAM modules, use the pamtester tool. If it's not installed, do this command
     # sudo pamtester common-password $USER change_pw      // test the PAM configuration
+
+    # sudo apt-get install libpam-tester
+    # sudo pamtester common-session $USER open_session    // The previous two will test the "PAM modules recently installed"
+
+
+
+# Allows users to view critical bug reports before upgrading packages
+sudo apt-get install apt-listbugs
+## HOW TO USE THIS IN DEPTH:
+    # apt-listbugs list <package>                         // Replace <package> with the name of the package for which you want to check critical bug reports.
+    # apt-listbugs upgrade                                // Checks for critical bug reports in packages that are scheduled for an upgrade. 
+    # apt-listbugs                                        // Checks for all bugs, not just critical ones
+    # apt-listbugs show <bug_number>                      // Replace <bug_number> with the specific bug number to view detailed information about that bug report.
+    # apt-listbugs --severity=<severity_level>            // Show bug severity 
+    # apt-listbugs --interactive                          // This command allows you to interactively review bug reports and decide whether to proceed with the upgrade or not.
+    # apt-listbugs update                                 // Updates the bug database
+
+
+
+
+
+
+
+
 
 # Ensure that SSH server is installed
 sudo apt-get install -y openssh-server
