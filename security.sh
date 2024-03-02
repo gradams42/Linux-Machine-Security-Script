@@ -66,7 +66,6 @@ SSH_SERVICE=$(systemctl list-units --type=service | grep -oE 'ssh[a-zA-Z0-9._-]*
 # Check if the SSH service name is found
 if [ -z "$SSH_SERVICE" ]; then
     echo "SSH service not found."
-    exit 1
 fi
 
 # Find a line containing "pam_pwquality.so" in the /etc/security/pwquality.conf file, look for the "minlen=" setting, and replace its value with "12".
@@ -87,7 +86,6 @@ sudo systemctl restart "$SSH_SERVICE"
 # Check if the restart was successful
 if [ $? -ne 0 ]; then
     echo "Failed to restart SSH service: $SSH_SERVICE"
-    exit 1
 fi
 
 echo "SSH service ($SSH_SERVICE) restarted successfully."
@@ -124,7 +122,6 @@ RSYSLOG_SERVICE=$(systemctl list-units --type=service | grep -oE 'rsyslog[a-zA-Z
 
 if [ -z "$RSYSLOG_SERVICE" ]; then
     echo "rsyslog service not found."
-    exit 1
 fi
 
 # Enable the rsyslog service to start automatically at boot time on a Linux system
@@ -136,7 +133,6 @@ sudo systemctl start "$RSYSLOG_SERVICE"
 # Check if the start was successful
 if [ $? -ne 0 ]; then
     echo "Failed to start rsyslog service: $RSYSLOG_SERVICE"
-    exit 1
 fi
 
 echo "rsyslog service ($RSYSLOG_SERVICE) started successfully."
