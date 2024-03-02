@@ -223,6 +223,15 @@ sudo freshclam
 
 
 
+# Kill any existing freshclam processes
+sudo pkill -f freshclam
+
+# Wait for existing processes to terminate (optional)
+while pkill -0 -f freshclam &>/dev/null; do
+    echo "Waiting for existing freshclam processes to terminate..."
+    sleep 5
+done
+
 # Manually update the virus databases for ClamAV on a Linux system
 if sudo freshclam; then
     echo "Virus databases updated successfully."
@@ -246,6 +255,7 @@ if systemctl list-unit-files | grep -q 'clamav-daemon.service'; then
 else
     echo "Error: clamav-daemon service not found. Please check your installation."
 fi
+
 
 # Configure ClamAV service
 CLAMAV_SERVICE=$(systemctl list-units --type=service | grep -oE 'clamav[a-zA-Z0-9._-]*\.service')
