@@ -57,9 +57,6 @@ sudo apt-get install -y libpam-pwquality
     # sudo pamtester common-password $USER change_pw      // test the PAM configuration
 
 
-
-#!/bin/bash
-
 # Dynamically determine the SSH service name
 SSH_SERVICE=$(systemctl list-units --type=service | grep -oE 'ssh[a-zA-Z0-9._-]*\.service')
 
@@ -70,28 +67,33 @@ echo "SSH_SERVICE: $SSH_SERVICE"
 # Check if the SSH service name is found
 if [ -z "$SSH_SERVICE" ]; then
     echo "SSH service not found."
-fi
+else
+    # Check if the SSH configuration file exists
+    SSH_CONFIG_FILE="/etc/ssh/sshd_config"
+    if [ -e "$SSH_CONFIG_FILE" ]; then
+        # Find a line containing "pam_pwquality.so" in the /etc/security/pwquality.conf file, look for the "minlen=" setting, and replace its value with "12".
+        sudo sed -i "/pam_pwquality.so/s/\(minlen=\)[0-9]*/\\112/" /etc/security/pwquality.conf
 
-# Find a line containing "pam_pwquality.so" in the /etc/security/pwquality.conf file, look for the "minlen=" setting, and replace its value with "12".
-sudo sed -i "/pam_pwquality.so/s/\(minlen=\)[0-9]*/\\112/" /etc/security/pwquality.conf
+    # Change the configuration of the SSH daemon to allow password authentication (PasswordAuthentication yes)
+    sudo sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/' /etc/ssh/sshd_config
 
-# Change the configuration of the SSH daemon to allow password authentication (PasswordAuthentication yes)
-sudo sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/' /etc/ssh/sshd_config
+    # TO USE SSH RSA KEY INSTEAD:
+    # ssh-keygen -t rsa -b 2048                   //-t rsa sets rsa key type, and -b 2048 sets the number of bits in the key
+    # After generating the key pair, you can copy the public key (~/.ssh/id_rsa.pub) 
+    # to the remote server where you want to authenticate. 
+    # ssh-copy-id user@remote_server              // ssh-copy-id command to automate the aforementioned process
 
-# TO USE SSH RSA KEY INSTEAD:
-# ssh-keygen -t rsa -b 2048                   //-t rsa sets rsa key type, and -b 2048 sets the number of bits in the key
-# After generating the key pair, you can copy the public key (~/.ssh/id_rsa.pub) 
-# to the remote server where you want to authenticate. 
-# ssh-copy-id user@remote_server              // ssh-copy-id command to automate the aforementioned process
+    # Restart the SSH service using the dynamically determined name
+    sudo systemctl restart "$SSH_SERVICE"
 
-# Restart the SSH service using the dynamically determined name
-sudo systemctl restart "$SSH_SERVICE"
-
-    # Check if the restart was successful
-    if [ $? -ne 0 ]; then
-        echo "Failed to restart SSH service: $SSH_SERVICE"
-    else
-        echo "SSH service ($SSH_SERVICE) restarted successfully."
+        # Check if the restart was successful
+        if [ $? -ne 0 ]; then
+            echo "Failed to restart SSH service: $SSH_SERVICE"
+        else
+            echo "SSH service ($SSH_SERVICE) restarted successfully."
+        fi
+    else 
+        echo "SSH configuration file not found: $SSH_CONFIG_FILE"
     fi
 fi
 
