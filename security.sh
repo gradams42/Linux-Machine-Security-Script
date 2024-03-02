@@ -1,8 +1,8 @@
 #!/bin/bash
 
+## THIS SCRIPT DOES THE FOLLOWING:
 
-# Installed Unattended Upgrades:
-# Installed the unattended-upgrades package to automatically install security updates.
+# automatically install security updates.
 
 # Configured UFW (Uncomplicated Firewall):
 # Installed iptables, libip6tc2, and ufw to manage firewall settings.
@@ -13,7 +13,6 @@
 # Installed openssh-server and openssh-sftp-server.
 # Generated SSH keys for RSA, ECDSA, and ED25519.
 
-# Installed Fail2Ban:
 # Installed fail2ban for intrusion prevention.
 
 # Installed Log Monitoring Tools:
@@ -41,22 +40,24 @@
 # Provided a list of users appearing in the top.log file to show who is running processes.
 
 
+# BEGINNING OF SCRIPT:
+
 # Enable automatic security updates
 sudo apt-get install -y unattended-upgrades
 sudo dpkg-reconfigure -plow unattended-upgrades
 
 # Configure and enable firewall (UFW)
 sudo apt-get install -y ufw
-# COMMANDS TO USE WITH UFW:
-    # sudo ufw enable //activates the firewall.
-    # sudo ufw disable //deactvates the firewall
-    # sudo ufw status //displays the current status and rules of UFW.
-    # sudo ufw allow [port_number]  //allow traffic for port
-    # sudo ufw allow [port_number]/[protocol]  //allow a specific protocal on port number 
-    # sudo ufw allow from [ip_address] //allow traffic from specific IP address
-    # sudo ufw deny [port_number] //deny traffic from port number
-    # sudo ufw delete [rule_number] //delete a rule
-    # sudo ufw reset //removes all rules and resets UFW to its default state.
+    # COMMANDS TO USE WITH UFW:
+        # sudo ufw enable                           //activates the firewall.
+        # sudo ufw disable                          //deactvates the firewall
+        # sudo ufw status                           //displays the current status and rules of UFW.
+        # sudo ufw allow [port_number]              //allow traffic for port
+        # sudo ufw allow [port_number]/[protocol]  //allow a specific protocal on port number 
+        # sudo ufw allow from [ip_address]         //allow traffic from specific IP address
+        # sudo ufw deny [port_number]              //deny traffic from port number
+        # sudo ufw delete [rule_number]            //delete a rule
+        # sudo ufw reset                            //removes all rules and resets UFW to its default state.
 
 
 # To ensure that any incoming traffic that is not explicitly allowed by a specific rule will be denied
