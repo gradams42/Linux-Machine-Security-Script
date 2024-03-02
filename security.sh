@@ -1,7 +1,44 @@
 #!/bin/bash
 
 
-## This script is to make an outline to implement secure systems on a new linux system. 
+# Installed Unattended Upgrades:
+# Installed the unattended-upgrades package to automatically install security updates.
+
+# Configured UFW (Uncomplicated Firewall):
+# Installed iptables, libip6tc2, and ufw to manage firewall settings.
+# Set default incoming policy to 'deny'.
+# Set default outgoing policy to 'allow'.
+
+# Installed and Configured OpenSSH:
+# Installed openssh-server and openssh-sftp-server.
+# Generated SSH keys for RSA, ECDSA, and ED25519.
+
+# Installed Fail2Ban:
+# Installed fail2ban for intrusion prevention.
+
+# Installed Log Monitoring Tools:
+# Installed packages like python3-pyinotify, python3-systemd, and whois for log monitoring.
+
+# Installed Rsyslog:
+# Installed rsyslog for system logging.
+
+# Configured PAM Password Quality:
+# Verified that libpam-pwquality is installed, which enhances password quality.
+
+# Installed and Configured AppArmor:
+# Installed apparmor and related utilities.
+
+# Installed and Configured Auditd:
+# Installed auditd for system auditing.
+
+# Installed ClamAV Antivirus:
+# Installed ClamAV antivirus packages (clamav, clamav-base, clamav-daemon, clamdscan, etc.).
+# Updated virus databases.
+# Notified About FreshClam Log Lock Issue:
+# Indicated an issue with the FreshClam log being locked by another process.
+
+# Listed Different Users in top.log:
+# Provided a list of users appearing in the top.log file to show who is running processes.
 
 
 # Enable automatic security updates
@@ -282,6 +319,6 @@ echo "Security configurations applied successfully!"
 top -n 1 -b > top.log
 
 # Display different users in the top.log file
-echo "Different Users in top.log:"
+echo "Different Users running processes:"
 awk '{if(NR>7)print $2}' top.log | sort | uniq
 
