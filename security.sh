@@ -128,15 +128,15 @@ fi
 sudo systemctl enable "$RSYSLOG_SERVICE"
 
 # Start the rsyslog service using the dynamically determined name
-sudo systemctl start "$RSYSLOG_SERVICE"
+sudo systemctl restart "$RSYSLOG_SERVICE"
 
-# Check if the start was successful
-if [ $? -ne 0 ]; then
-    echo "Failed to start rsyslog service: $RSYSLOG_SERVICE"
+  # Check if the restart was successful
+    if [ $? -ne 0 ]; then
+        echo "Failed to restart SSH service: $SSH_SERVICE"
+    else
+        echo "SSH service ($SSH_SERVICE) restarted successfully."
+    fi
 fi
-
-echo "rsyslog service ($RSYSLOG_SERVICE) started successfully."
-
 
 # Enable and configure system logging
 sudo systemctl enable rsyslog
