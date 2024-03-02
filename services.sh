@@ -60,13 +60,13 @@ stop_and_disable_service "colord"
 # Fix cron.service (UNSAFE)
 stop_and_disable_service "cron"
 
-: <<'COMMENT'
 # Fix cups-browsed.service (UNSAFE)
 stop_and_disable_service "cups-browsed"
 
 # Fix cups.service (UNSAFE)
 stop_and_disable_service "cups"
 
+: <<'COMMENT'
 # Fix dbus.service (UNSAFE)
 stop_and_disable_service "dbus"
 
