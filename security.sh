@@ -56,6 +56,9 @@ sudo apt-get install -y libpam-pwquality
     # sudo apt-get install -y libpam-tester               // To check the status of PAM modules, use the pamtester tool. If it's not installed, do this command
     # sudo pamtester common-password $USER change_pw      // test the PAM configuration
 
+# Ensure that SSH server is installed
+sudo apt-get install -y openssh-server
+
 
 # Dynamically determine the SSH service name
 SSH_SERVICE=$(systemctl list-units --type=service | grep -oE 'ssh[a-zA-Z0-9._-]*\.service')
