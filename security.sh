@@ -219,6 +219,7 @@ sudo freshclam
         # sudo freshclam --config-file=/path/to/freshclam.conf     // update freshlam config
         # sudo freshclam --force                                   // force database update
         # sudo freshclam -d                                       // run freshclam in background
+        # sudo systemct1 stop clamac-freshclam                    // stop freshclam
 
 
 
@@ -226,21 +227,15 @@ sudo freshclam
 sudo systemctl enable clamav-freshclam
 
 # Check if clamav-daemon service exists
-if systemctl list-unit-files | grep -q 'clamav-daemon.service'; then
+if systemctl list-unit-files | grep -q 'clamav-freshclam.service'; then
     # Enable and start clamav-daemon service
-    sudo systemctl enable clamav-daemon
-    sudo systemctl start clamav-daemon
-    echo "clamav-daemon service enabled and started."
+    sudo systemctl enable clamav-freshclam
+    sudo systemctl start clamav-freshclam
+    echo "clamav-freshclam service enabled and started."
 else
-    echo "Error: clamav-daemon service not found. Please check your installation."
+    echo "Error: clamav-freshclam service not found. Please check your installation."
 fi
 
-# Outputs the progress of the freshclam service.
-sudo systemctl start clamav-freshclam
-
-# Outputs the progress of the service startup. Once started, the ClamAV daemon will continue to run in the background,
-# providing real-time scanning capabilities.
-sudo systemctl start clamav-daemon
 
 
 # Configure secure remote access (SSH):
