@@ -53,6 +53,8 @@ stop_and_disable_service "avahi-daemon"
 # Fix clamav-daemon.service (UNSAFE)
 # stop_and_disable_service "clamav-daemon"
 
+
+: <<'COMMENT'
 # Fix colord.service (EXPOSED)
 stop_and_disable_service "colord"
 
@@ -76,7 +78,5 @@ stop_and_disable_service "emergency"
 
 # Fix fwupd.service (EXPOSED)
 stop_and_disable_service "fwupd"
+COMMENT
 
-# Continue with other services...
-
-# Note: The script provides a basic template. Adjustments might be needed based on specific requirements and dependencies.
