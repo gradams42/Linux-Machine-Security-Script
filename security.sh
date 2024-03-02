@@ -348,6 +348,21 @@ echo "ClamAV service enabled and started."
 
 # sudo ufw deny <port_number>/tcp                                         // Disable unnecessary network ports and services
 
+# the tool to check for processes that need to be restarted.
+sudo apt-get install needrestart
+    # sudo needrestart -i                                           // Interactive mode, allowing you to select and restart processes interactively.
+    # sudo needrestart -r                                           // displays a list of processes that need to be restarted.
+    # sudo needrestart -p <pid>                                     // Checks for specific PIDs
+    # sudo needrestart -r -a                                        // Restarts all processes that need to be restarted automatically.
+    # sudo needrestart -o                                           // Processes with open file descriptors that may need to be restarted
+    # sudo needrestart -d                                           // shows processes with deleted executables that may need to be restarted.
+    # sudo needrestart -(X)                                         // This allows you to exclude specific processes from the check. (Replace x)
+    # sudo needrestart -l                                           // checks for shared libraries that need a restart.
+    # man needrestart                                               // typical man page
+
+
+# Performs a check and provide information on processes that need a restart
+sudo needrestart -r -a 
 
 echo "Security configurations applied successfully!"
 
