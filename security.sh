@@ -58,20 +58,39 @@ sudo apt-get install -y libpam-pwquality
 
 
 
+#!/bin/bash
 
-#  Find a line containing "pam_pwquality.so" in the /etc/security/pwquality.conf file, look for the "minlen=" setting, and replace its value with "12.
-sudo sed -i '/pam_pwquality.so/s/\(minlen=\)[0-9]*/\112/' /etc/security/pwquality.conf  
+# Dynamically determine the SSH service name
+SSH_SERVICE=$(systemctl list-units --type=service | grep -oE 'ssh[a-zA-Z0-9._-]*\.service')
 
-# change the configuration of the SSH daemon to allow password authentication (PasswordAuthentication yes). This modification allows users to log in using their passwords
+# Check if the SSH service name is found
+if [ -z "$SSH_SERVICE" ]; then
+    echo "SSH service not found."
+    exit 1
+fi
+
+# Find a line containing "pam_pwquality.so" in the /etc/security/pwquality.conf file, look for the "minlen=" setting, and replace its value with "12".
+sudo sed -i "/pam_pwquality.so/s/\(minlen=\)[0-9]*/\\112/" /etc/security/pwquality.conf
+
+# Change the configuration of the SSH daemon to allow password authentication (PasswordAuthentication yes)
 sudo sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/' /etc/ssh/sshd_config
-            # TO USE SSH RSA KEY INSTEAD:
-            # ssh-keygen -t rsa -b 2048                   //-t rsa sets rsa key type, and -b 2048 sets number of bits in the key
-            #                                             // After generating the key pair, you can copy the public key (~/.ssh/id_rsa.pub) 
-            #                                             // to the remote server where you want to authenticate. 
-            # ssh-copy-id user@remote_serverthe           // ssh-copy-id command to automate the aformentioned process
 
-# Restars SSH service
-sudo systemctl restart ssh 
+# TO USE SSH RSA KEY INSTEAD:
+# ssh-keygen -t rsa -b 2048                   //-t rsa sets rsa key type, and -b 2048 sets the number of bits in the key
+# After generating the key pair, you can copy the public key (~/.ssh/id_rsa.pub) 
+# to the remote server where you want to authenticate. 
+# ssh-copy-id user@remote_server              // ssh-copy-id command to automate the aforementioned process
+
+# Restart the SSH service using the dynamically determined name
+sudo systemctl restart "$SSH_SERVICE"
+
+# Check if the restart was successful
+if [ $? -ne 0 ]; then
+    echo "Failed to restart SSH service: $SSH_SERVICE"
+    exit 1
+fi
+
+echo "SSH service ($SSH_SERVICE) restarted successfully."
 
 # Implement fail2ban for intrusion prevention
 sudo apt-get install -y fail2ban
@@ -96,6 +115,32 @@ sudo systemctl enable fail2ban
 
 # Start the Fail2Ban service
 sudo systemctl start fail2ban
+
+# Enable and configure system logging
+sudo apt-get install -y rsyslog
+
+# Check if the rsyslog service is found
+RSYSLOG_SERVICE=$(systemctl list-units --type=service | grep -oE 'rsyslog[a-zA-Z0-9._-]*\.service')
+
+if [ -z "$RSYSLOG_SERVICE" ]; then
+    echo "rsyslog service not found."
+    exit 1
+fi
+
+# Enable the rsyslog service to start automatically at boot time on a Linux system
+sudo systemctl enable "$RSYSLOG_SERVICE"
+
+# Start the rsyslog service using the dynamically determined name
+sudo systemctl start "$RSYSLOG_SERVICE"
+
+# Check if the start was successful
+if [ $? -ne 0 ]; then
+    echo "Failed to start rsyslog service: $RSYSLOG_SERVICE"
+    exit 1
+fi
+
+echo "rsyslog service ($RSYSLOG_SERVICE) started successfully."
+
 
 # Enable and configure system logging
 sudo systemctl enable rsyslog
@@ -169,12 +214,20 @@ sudo freshclam
         # sudo freshclam --force                                   // force database update
         # sudo freshclam -d                                       // run freshclam in background
 
+
+
 # clamav-freshclam service will be set to start automatically whenever the system boots up
 sudo systemctl enable clamav-freshclam
 
-# lamav-daemon service will be set to start automatically at boot time. This allows ClamAV
-# to provide continuous protection against malware by scanning files in real-time as they are accessed or modified
-sudo systemctl enable clamav-daemon
+# Check if clamav-daemon service exists
+if systemctl list-unit-files | grep -q 'clamav-daemon.service'; then
+    # Enable and start clamav-daemon service
+    sudo systemctl enable clamav-daemon
+    sudo systemctl start clamav-daemon
+    echo "clamav-daemon service enabled and started."
+else
+    echo "Error: clamav-daemon service not found. Please check your installation."
+fi
 
 # Outputs the progress of the freshclam service.
 sudo systemctl start clamav-freshclam
@@ -182,6 +235,7 @@ sudo systemctl start clamav-freshclam
 # Outputs the progress of the service startup. Once started, the ClamAV daemon will continue to run in the background,
 # providing real-time scanning capabilities.
 sudo systemctl start clamav-daemon
+
 
 # Configure secure remote access (SSH):
     # These changes collectively enhance the security of your SSH server by preventing direct root login and disabling
