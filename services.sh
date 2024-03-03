@@ -1,5 +1,47 @@
 #!/bin/bash
 
+
+apt_update() {
+  # Update package list
+  apt update
+
+  # Apt upgrade packages
+  apt upgrade -y
+
+  # Apt full upgrade 
+  apt full-upgrade -y
+}
+
+# Function to generate GRUB password hash
+generate_grub_password_hash() {
+    echo "Enter your desired GRUB password:"
+    read -s grub_password
+    echo
+    grub_password_hash=$(echo -e "$grub_password\n$grub_password" | grub-mkpasswd-pbkdf2 | grep "grub.pbkdf2.*" -o)
+}
+
+# configure GRUB with a password. 
+# This helps prevent unauthorized access and alterations to the boot configuration
+configure_grub() {
+    sudo cp /etc/default/grub /etc/default/grub.backup
+
+    sudo tee /etc/default/grub > /dev/null <<EOL
+GRUB_CMDLINE_LINUX_DEFAULT="quiet splash"
+GRUB_HIDDEN_TIMEOUT_QUIET=true
+GRUB_TIMEOUT_STYLE=hidden
+GRUB_TIMEOUT=0
+GRUB_DISABLE_RECOVERY=true
+GRUB_DISABLE_SUBMENU=y
+GRUB_RECORDFAIL_TIMEOUT=0
+GRUB_CMDLINE_LINUX=""
+GRUB_PASSWORD="$grub_password_hash"
+EOL
+
+    sudo update-grub
+}
+
+
+
 # Function to install a package
 install_package() {
     local package_name="$1"
@@ -63,50 +105,16 @@ sudo cp /etc/fail2ban/jail.conf /etc/fail2ban/jail.local
 echo "Copied /etc/fail2ban/jail.conf to /etc/fail2ban/jail.local"
 
 
-
-
-
-
-
-# Function to generate GRUB password hash
-generate_grub_password_hash() {
-    echo "Enter your desired GRUB password:"
-    read -s grub_password
-    echo
-    grub_password_hash=$(echo -e "$grub_password\n$grub_password" | grub-mkpasswd-pbkdf2 | grep "grub.pbkdf2.*" -o)
-}
-
-# configure GRUB with a password. 
-# This helps prevent unauthorized access and alterations to the boot configuration
-configure_grub() {
-    sudo cp /etc/default/grub /etc/default/grub.backup
-
-    sudo tee /etc/default/grub > /dev/null <<EOL
-GRUB_CMDLINE_LINUX_DEFAULT="quiet splash"
-GRUB_HIDDEN_TIMEOUT_QUIET=true
-GRUB_TIMEOUT_STYLE=hidden
-GRUB_TIMEOUT=0
-GRUB_DISABLE_RECOVERY=true
-GRUB_DISABLE_SUBMENU=y
-GRUB_RECORDFAIL_TIMEOUT=0
-GRUB_CMDLINE_LINUX=""
-GRUB_PASSWORD="$grub_password_hash"
-EOL
-
-    sudo update-grub
-}
-
 # Main script
 echo "This script will configure GRUB with a password to prevent altering boot configuration."
 echo
 
 generate_grub_password_hash
 
-echo
+
 echo "Configuring GRUB..."
 configure_grub
 
-echo
 echo "GRUB has been configured with a password."
 
 # Optional: Clean up sensitive information
