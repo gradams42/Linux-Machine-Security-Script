@@ -1,84 +1,56 @@
 #!/bin/bash
 
-# Function to stop and disable a service
-stop_and_disable_service() {
-    local service_name="$1"
-    sudo systemctl stop "$service_name"
-    sudo systemctl disable "$service_name"
-    echo "Stopped and disabled $service_name"
+# Function to install a package
+install_package() {
+    local package_name="$1"
+    sudo apt-get install -y "$package_name"
+    echo "Installed $package_name"
 }
 
-# Function to only stop a service
-stop_service() {
-    local service_name="$1"
-    sudo systemctl stop "$service_name"
-    echo "Stopped $service_name"
-}
+# Install ModemManager package (MEDIUM)
+install_package "modemmanager"
 
-# Function to only disable a service
-disable_service() {
-    local service_name="$1"
-    sudo systemctl disable "$service_name"
-    echo "Disabled $service_name"
-}
+# Install NetworkManager package (EXPOSED)
+install_package "network-manager"
 
-# Function to protect a service (mark it as protected)
-protect_service() {
-    local service_name="$1"
-    sudo systemctl protect "$service_name"
-    echo "Protected $service_name"
-}
+# Install accounts-daemon package (MEDIUM)
+install_package "accountsservice"
 
-# Fix ModemManager.service (MEDIUM)
-stop_and_disable_service "ModemManager"
+# Install alsa-state package (UNSAFE)
+install_package "alsa-utils"
 
-# Fix NetworkManager.service (EXPOSED)
-stop_and_disable_service "NetworkManager"
+# Install anacron package (UNSAFE)
+install_package "anacron"
 
-# Fix accounts-daemon.service (MEDIUM)
-stop_and_disable_service "accounts-daemon"
+# Install auditd package (EXPOSED)
+install_package "auditd"
 
-# Fix alsa-state.service (UNSAFE)
-stop_and_disable_service "alsa-state"
+# Install avahi-daemon package (UNSAFE)
+install_package "avahi-daemon"
 
-# Fix anacron.service (UNSAFE)
-stop_and_disable_service "anacron"
+# Install clamav-daemon package (UNSAFE)
+# install_package "clamav-daemon"
 
-# Fix auditd.service (EXPOSED)
-stop_and_disable_service "auditd"
+# Install colord package (EXPOSED)
+install_package "colord"
 
-# Fix avahi-daemon.service (UNSAFE)
-stop_and_disable_service "avahi-daemon"
+# Install cron package (UNSAFE)
+install_package "cron"
 
-# Fix clamav-daemon.service (UNSAFE)
-# stop_and_disable_service "clamav-daemon"
+# Install cups-browsed package (UNSAFE)
+install_package "cups-browsed"
 
+# Install cups package (UNSAFE)
+install_package "cups"
 
-# Fix colord.service (EXPOSED)
-stop_and_disable_service "colord"
+# Install dbus package (UNSAFE)
+# install_package "dbus"
 
-# Fix cron.service (UNSAFE)
-stop_and_disable_service "cron"
+# Install emergency package (UNSAFE)
+install_package "emergency"
 
-# Fix cups-browsed.service (UNSAFE)
-stop_and_disable_service "cups-browsed"
+# Install fail2ban package (UNSAFE)
+# install_package "fail2ban"
 
-# Fix cups.service (UNSAFE)
-stop_and_disable_service "cups"
-
-: <<'COMMENT'
-# Fix dbus.service (UNSAFE)
-stop_and_disable_service "dbus"
-COMMENT
-
-# Fix emergency.service (UNSAFE)
-stop_and_disable_service "emergency"
-
-
-# Fix fail2ban.service (UNSAFE)
-# stop_and_disable_service "fail2ban"
-
-# Fix fwupd.service (EXPOSED)
-stop_and_disable_service "fwupd"
-
-
+# Install fwupd package (EXPOSED)
+install_package "fwupd"
