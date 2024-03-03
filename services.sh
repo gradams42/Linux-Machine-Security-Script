@@ -54,3 +54,6 @@ install_package "emergency"
 
 # Install fwupd package (EXPOSED)
 install_package "fwupd"
+
+#Instal list-bugs package
+install_package apt-listbugs
