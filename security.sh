@@ -48,15 +48,19 @@ sudo dpkg-reconfigure -plow unattended-upgrades
 # Configure and enable firewall (UFW)
 sudo apt-get install -y ufw
 # COMMANDS TO USE WITH UFW:
+    # sudo ufw status //displays the current status and rules of UFW.
     # sudo ufw enable //activates the firewall.
     # sudo ufw disable //deactvates the firewall
-    # sudo ufw status //displays the current status and rules of UFW.
     # sudo ufw allow [port_number]  //allow traffic for port
     # sudo ufw allow [port_number]/[protocol]  //allow a specific protocal on port number 
     # sudo ufw allow from [ip_address] //allow traffic from specific IP address
     # sudo ufw deny [port_number] //deny traffic from port number
     # sudo ufw delete [rule_number] //delete a rule
     # sudo ufw reset //removes all rules and resets UFW to its default state.
+        #COMMON USES:
+            # sudo ufw allow out 80/tcp
+            # sudo ufw allow out 443/tcp  //Enable these ports for internet usage
+
 
 
 # To ensure that any incoming traffic that is not explicitly allowed by a specific rule will be denied
@@ -376,6 +380,10 @@ top -n 1 -b > top.log
 echo "Different Users running processes:"
 awk '{if(NR>7)print $2}' top.log | sort | uniq
 
+
+echo "Now fixing file permission security:"
+sudo chmod 640 /etc/cups/cupsd.conf
+
 # Ask the user if they want to restart needed services
 read -p "Do you want to restart needed services? (y/n): " answer
 
@@ -385,5 +393,6 @@ if [ "$answer" == "y" ]; then
     sudo needrestart -r
     echo "Services restarted successfully."
 else
+
     echo "Please check for services needing restart later."
 fi
