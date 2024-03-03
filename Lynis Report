@@ -1,18 +1,18 @@
- Warnings (1):
+
+  -[ Lynis 3.0.9 Results ]-
+
+  Warnings (1):
   ----------------------------
   ! Found one or more vulnerable packages. [PKGS-7392] 
       https://cisofy.com/lynis/controls/PKGS-7392/
 
-  Suggestions (48):
+  Suggestions (47):
   ----------------------------
-                * This release is more than 4 months old. Check the website or GitHub to see if there is an update available. [LYNIS] 
-                    https://cisofy.com/lynis/controls/LYNIS/
+  * This release is more than 4 months old. Check the website or GitHub to see if there is an update available. [LYNIS] 
+      https://cisofy.com/lynis/controls/LYNIS/
 
-                * Copy /etc/fail2ban/jail.conf to jail.local to prevent it being changed by updates. [DEB-0880] 
-                    https://cisofy.com/lynis/controls/DEB-0880/
-
-                * Set a password on GRUB boot loader to prevent altering boot configuration (e.g. boot in single user mode without password) [BOOT-5122] 
-                    https://cisofy.com/lynis/controls/BOOT-5122/
+  * Set a password on GRUB boot loader to prevent altering boot configuration (e.g. boot in single user mode without password) [BOOT-5122] 
+      https://cisofy.com/lynis/controls/BOOT-5122/
 
   * Consider hardening system services [BOOT-5264] 
     - Details  : Run '/usr/bin/systemd-analyze security SERVICE' for each service
@@ -163,33 +163,3 @@
   * Harden compilers like restricting access to root user only [HRDN-7222] 
       https://cisofy.com/lynis/controls/HRDN-7222/
 
-  Follow-up:
-  ----------------------------
-  - Show details of a test (lynis show details TEST-ID)
-  - Check the logfile for all details (less /var/log/lynis.log)
-  - Read security controls texts (https://cisofy.com)
-  - Use --upload to upload data to central system (Lynis Enterprise users)
-
-================================================================================
-
-  Lynis security scan details:
-
-  Hardening index : 69 [#############       ]
-  Tests performed : 262
-  Plugins enabled : 1
-
-  Components:
-  - Firewall               [V]
-  - Malware scanner        [V]
-
-  Scan mode:
-  Normal [V]  Forensics [ ]  Integration [ ]  Pentest [ ]
-
-  Lynis modules:
-  - Compliance status      [?]
-  - Security audit         [V]
-  - Vulnerability scan     [V]
-
-  Files:
-  - Test and debug information      : /var/log/lynis.log
-  - Report data                     : /var/log/lynis-report.dat
