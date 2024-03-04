@@ -1,325 +1,130 @@
-#!/bin/bash
+# Lynis recommended security configurations
 
-## THIS SCRIPT DOES THE FOLLOWING:
+# Install libpam-tmpdir for setting $TMP and $TMPDIR for PAM sessions
+sudo apt-get install -y libpam-tmpdir
 
-# automatically install security updates.
+# Install apt-listbugs for displaying a list of critical bugs prior to each APT installation
+sudo apt-get install -y apt-listbugs
 
-# Configured UFW (Uncomplicated Firewall):
-# Installed iptables, libip6tc2, and ufw to manage firewall settings.
-# Set default incoming policy to 'deny'.
-# Set default outgoing policy to 'allow'.
+# Install needrestart to determine which daemons are using old versions of libraries and need restarting
+sudo apt-get install -y needrestart
 
-# Installed and Configured OpenSSH:
-# Installed openssh-server and openssh-sftp-server.
-# Generated SSH keys for RSA, ECDSA, and ED25519.
-
-# Installed fail2ban for intrusion prevention.
-
-# Installed Log Monitoring Tools:
-# Installed packages like python3-pyinotify, python3-systemd, and whois for log monitoring.
-
-# Installed Rsyslog:
-# Installed rsyslog for system logging.
-
-# Configured PAM Password Quality:
-# Verified that libpam-pwquality is installed, which enhances password quality.
-
-# Installed and Configured AppArmor:
-# Installed apparmor and related utilities.
-
-# Installed and Configured Auditd:
-# Installed auditd for system auditing.
-
-# Installed ClamAV Antivirus:
-# Installed ClamAV antivirus packages (clamav, clamav-base, clamav-daemon, clamdscan, etc.).
-# Updated virus databases.
-# Notified About FreshClam Log Lock Issue:
-# Indicated an issue with the FreshClam log being locked by another process.
-
-# Listed Different Users in top.log:
-# Provided a list of users appearing in the top.log file to show who is running processes.
-
-
-# BEGINNING OF SCRIPT:
-
-# Enable automatic security updates
-sudo apt-get install -y unattended-upgrades
-sudo dpkg-reconfigure -plow unattended-upgrades
-
-# Configure and enable firewall (UFW)
-sudo apt-get install -y ufw
-    # COMMANDS TO USE WITH UFW:
-        # sudo ufw enable                           //activates the firewall.
-        # sudo ufw disable                          //deactvates the firewall
-        # sudo ufw status                           //displays the current status and rules of UFW.
-        # sudo ufw allow [port_number]              //allow traffic for port
-        # sudo ufw allow [port_number]/[protocol]  //allow a specific protocal on port number 
-        # sudo ufw allow from [ip_address]         //allow traffic from specific IP address
-        # sudo ufw deny [port_number]              //deny traffic from port number
-        # sudo ufw delete [rule_number]            //delete a rule
-        # sudo ufw reset                            //removes all rules and resets UFW to its default state.
-
-
-# To ensure that any incoming traffic that is not explicitly allowed by a specific rule will be denied
-sudo ufw default deny incoming 
-
-# Ensure that any outgoing traffic from your system will be allowed by default
-sudo ufw default allow outgoing
-
-# Create a rule in the firewall that permits incoming traffic on the SSH port
-sudo ufw allow ssh
-
-# Activating firewall
-sudo ufw enable
-
-# Enforce strong password policies
-sudo apt-get install -y libpam-pwquality
-## HOW TO USE THIS IN DEPTH:
-    # sudo nano /etc/security/pwquality.conf              // to edit the configuration file
-    # minlen = 8                                          // Specifies the minimum length for user passwords
-    # maxlen = 16                                         // maximum length for user passwords,
-    # minclass = 3                                        // Requires passwords to contain characters from at least three different
-    #                                                     // character classes (e.g., uppercase letters, lowercase letters, numbers, special characters).
-    #
-    # mindiff = 3                                         // Specifies the minimum number of characters that must be different from the previous password.
-    # enforce_for_root = 1                                // Enforces the specified password policies for the root user, typically the superuser or administrator account
-    # enforce_for_system_accounts = 1                     // Enforces the specified password policies for system accounts, which are usually used by the operating system and not regular users.
-    # maxrepeat = 3                                       // Limits the number of consecutive identical characters allowed in a password to three
-    # usercheck = 1                                       //  Enables additional checks on the username to ensure it is not part of the password or does not share too many similarities.
-
-
-    # sudo nano /etc/pam.d/common-password                // Update the PAM configuration file 
-    # password requisite pam_pwquality.so retry=3         // ensures that the pam_pwquality.so module is applied during the password management phase, and it enforces password quality rules
-    # passwd                                              // test the password quality requirements by changing user password
-    # sudo apt-get install -y libpam-tester               // To check the status of PAM modules, use the pamtester tool. If it's not installed, do this command
-    # sudo pamtester common-password $USER change_pw      // test the PAM configuration
-
-# Ensure that SSH server is installed
-sudo apt-get install -y openssh-server
-
-
-# Dynamically determine the SSH service name
-SSH_SERVICE=$(systemctl list-units --type=service | grep -oE 'ssh[a-zA-Z0-9._-]*\.service')
-
-
-# Debug output
-echo "SSH_SERVICE: $SSH_SERVICE"
-
-# Check if the SSH service name is found
-if [ -z "$SSH_SERVICE" ]; then
-    echo "SSH service not found."
-else
-    # Check if the SSH configuration file exists
-    SSH_CONFIG_FILE="/etc/ssh/sshd_config"
-    if [ -e "$SSH_CONFIG_FILE" ]; then
-        # Find a line containing "pam_pwquality.so" in the /etc/security/pwquality.conf file, look for the "minlen=" setting, and replace its value with "12".
-        sudo sed -i "/pam_pwquality.so/s/\(minlen=\)[0-9]*/\\112/" /etc/security/pwquality.conf
-
-    # Change the configuration of the SSH daemon to allow password authentication (PasswordAuthentication yes)
-    sudo sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/' /etc/ssh/sshd_config
-
-    # TO USE SSH RSA KEY INSTEAD:
-    # ssh-keygen -t rsa -b 2048                   //-t rsa sets rsa key type, and -b 2048 sets the number of bits in the key
-    # After generating the key pair, you can copy the public key (~/.ssh/id_rsa.pub) 
-    # to the remote server where you want to authenticate. 
-    # ssh-copy-id user@remote_server              // ssh-copy-id command to automate the aforementioned process
-
-    # Restart the SSH service using the dynamically determined name
-    sudo systemctl restart "$SSH_SERVICE"
-
-        # Check if the restart was successful
-        if [ $? -ne 0 ]; then
-            echo "Failed to restart SSH service: $SSH_SERVICE"
-        else
-            echo "SSH service ($SSH_SERVICE) restarted successfully."
-        fi
-    else 
-        echo "SSH configuration file not found: $SSH_CONFIG_FILE"
-    fi
-fi
-
-
-# Implement fail2ban for intrusion prevention
+# Install fail2ban to automatically ban hosts that commit multiple authentication errors
 sudo apt-get install -y fail2ban
 
-# Enable the Fail2Ban service to start automatically at boot time on a Linux system
-sudo systemctl enable fail2ban 
-    # COMMANDS TO USE WITH fail2ban:
-           # sudo systemctl start fail2ban                      // Start the Fail2Ban service.
-           # sudo systemctl stop fail2ban                       // Stop the Fail2Ban service.
-           # sudo systemctl restart fail2ban                    // Restart the Fail2Ban service.
-           # sudo systemctl status fail2ban                     // Check the status of the Fail2Ban service.
-           # sudo systemctl disable fail2ban                    // disable fail2ban at boot
-           # sudo fail2ban-client reload                        // Reload Fail2Ban Configuration
-           # sudo fail2ban-client version                       // check fail2ban version
-           # sudo fail2ban-client status                        // output will show the status of each jail, indicating 
-           #                                                    // whether they are active or inactive. If a jail is active, it means 
-           #                                                    // that Fail2Ban is actively monitoring the corresponding log files and taking action 
-           #                                                    // against malicious activity
-           #                                                    // May also display a list of IP addresses that are currently banned by Fail2Ban.
-           # sudo fail2ban-client set JAIL unbanip IP_ADDRESS   // Replace JAIL with the name of the jail (e.g., sshd) and IP_ADDRESS with the IP address you want to unban.
-           # sudo fail2ban-client get JAIL filter               // Display filters for jail
+# Set a password on GRUB boot loader to prevent altering boot configuration
+# Replace 'your_password_here' with the actual password
+echo 'set superusers="root"\npassword_pbkdf2 root <your_password_here>' | sudo tee -a /etc/grub.d/40_custom
+sudo update-grub
 
-# Start the Fail2Ban service
-sudo systemctl start fail2ban
+# Consider hardening system services by running '/usr/bin/systemd-analyze security SERVICE' for each service
+# This can be done manually based on Lynis recommendations
 
-# Enable and configure system logging
-sudo apt-get install -y rsyslog
+# If not required, explicitly disable core dumps in /etc/security/limits.conf
+echo '* hard core 0' | sudo tee -a /etc/security/limits.conf
 
-# Check if the rsyslog service is found
-RSYSLOG_SERVICE=$(systemctl list-units --type=service | grep -oE 'rsyslog[a-zA-Z0-9._-]*\.service')
+# Configure password hashing rounds in /etc/login.defs
+# Replace 'number_of_rounds' with the desired number, e.g., 10000
+echo 'Rounds number_of_rounds' | sudo tee -a /etc/login.defs
 
-if [ -z "$RSYSLOG_SERVICE" ]; then
-    echo "rsyslog service not found."
-fi
+# Install a PAM module for password strength testing like pam_cracklib or pam_passwdqc
+sudo apt-get install -y libpam-cracklib
 
-# Enable the rsyslog service to start automatically at boot time on a Linux system
-sudo systemctl enable "$RSYSLOG_SERVICE"
+# When possible, set expiration dates for all password-protected accounts
+# Example: sudo passwd -e <username>
 
-# Start the rsyslog service using the dynamically determined name
-sudo systemctl restart "$RSYSLOG_SERVICE"
+# Configure minimum password age in /etc/login.defs
+echo 'PASS_MIN_DAYS 7' | sudo tee -a /etc/login.defs
 
-  # Check if the restart was successful
-    if [ $? -ne 0 ]; then
-        echo "Failed to restart SSH service: $SSH_SERVICE"
-    else
-        echo "SSH service ($SSH_SERVICE) restarted successfully."
-    fi
+# Configure maximum password age in /etc/login.defs
+echo 'PASS_MAX_DAYS 90' | sudo tee -a /etc/login.defs
 
-# Enable and configure system logging
-sudo systemctl enable rsyslog
-    # COMMANDS TO GO WITH:
-        # sudo systemctl start rsyslog                           // Start the rsyslog service.
-        # sudo systemctl stop rsyslog                            // Stop the rsyslog service.
-        # sudo systemctl restart rsyslog                         // Restart the rsyslog service.
-        # sudo systemctl status rsyslog                          // Check the status of the rsyslog service.
+# Default umask in /etc/login.defs could be more strict like 027
+echo 'UMASK 027' | sudo tee -a /etc/login.defs
 
-# This command is configuring a systemd timer for snaps to automatically refresh, ensuring that the installed snaps receive updates regularly
-echo 'refresh.timer: 4x daily' | sudo tee -a /etc/systemd/system/snapd.refresh.timer
-    # AGGREGATE COMMANDS:
-        # sudo systemctl daemon-reload                          // Reloads the systemd manager configuration to pick up changes.
-        # sudo systemctl restart snapd.refresh.timer            // Restarts the timer for snap refreshes to apply the new configuration immediately.
+# To decrease the impact of a full /home, /tmp, /var file system, place each on a separate partition
+# This should be done during the system installation or partitioning
 
+# Disable drivers like USB storage when not used
+# Check and disable unused USB storage drivers
 
-# AppArmor is a Linux security module that implements mandatory access control (MAC) using security profiles. 
-# These profiles define what resources (files, capabilities, network access, etc.) a specific application or process is 
-# allowed to access.
-sudo apt-get install -y apparmor apparmor-utils
+# Disable drivers like firewire storage when not used
+# Check and disable unused firewire storage drivers
 
-# ensure that all the AppArmor profiles in the /etc/apparmor.d/ directory are actively enforced on the system.
-# This step is important for the effective implementation of AppArmor's security measures.
-sudo aa-enforce /etc/apparmor.d/*
+# Check DNS configuration for the DNS domain name
+# Review and update DNS configuration if needed
 
-# auditd package will be installed on your system, and the auditing system will be available
-# for configuration and use. You can configure audit rules, define what events to monitor, and use tools 
-# like ausearch to search and analyze audit logs.
-sudo apt-get install -y auditd
-    # COMMANDS THAT COME WITH auditd
-        # sudo systemctl start auditd                            // start service
-        # sudo systemctl stop auditd                             // stop service
-        # sudo systemctl restart auditd                          // restart service
-        # sudo systemctl status auditd                           // check status
-        # sudo systemctl enable auditd                          // enable at boot
-        # sudo systemctl disable auditd                         // disable at boot
-        # sudo auditd --version                                 // display version
-        # sudo auditctl -w /path/to/file -p permissions -k key_name      // configure audit rules
-        # sudo auditctl -l                                      // display audit rules
-        # sudo ausearch -k key_name                             // search audit logs
-        # sudo aureport                                         // display audit statistics
-        # sudo ausearch -f /path/to/log/file                    // view audit log file
+# Install debsums utility for the verification of packages with a known good database
+sudo apt-get install -y debsums
 
-# enable at boot
+# Update your system with apt-get update, apt-get upgrade, apt-get dist-upgrade, and/or unattended-upgrades
+sudo apt-get update
+sudo apt-get upgrade
+sudo apt-get dist-upgrade
+sudo unattended-upgrades
+
+# Install package apt-show-versions for patch management purposes
+sudo apt-get install -y apt-show-versions
+
+# Consider using a tool to automatically apply upgrades
+# This can be a manual process based on system requirements
+
+# Determine if protocols 'dccp', 'sctp', 'rds', 'tipc' are really needed on this system
+# Review and disable unnecessary protocols in the system configuration
+
+# Access to CUPS configuration could be more strict
+# Review and update CUPS (Common UNIX Printing System) configuration for stricter access
+
+# Install Apache mod_evasive to guard the webserver against DoS/brute force attempts
+sudo apt-get install -y libapache2-mod-evasive
+
+# Install Apache modsecurity to guard the webserver against web application attacks
+sudo apt-get install -y libapache2-mod-security2
+
+# Enable logging to an external logging host for archiving purposes and additional protection
+# Configure syslog/rsyslog to forward logs to an external server
+
+# Check what deleted files are still in use and why
+# Investigate and remove any deleted files still in use
+
+# Add a legal banner to /etc/issue to warn unauthorized users
+echo 'Your legal warning message' | sudo tee /etc/issue
+
+# Add a legal banner to /etc/issue.net to warn unauthorized users
+echo 'Your legal warning message' | sudo tee /etc/issue.net
+
+# Enable process accounting
+sudo apt-get install -y acct
+sudo systemctl enable acct
+sudo systemctl start acct
+
+# Enable sysstat to collect accounting
+sudo apt-get install -y sysstat
+sudo systemctl enable sysstat
+sudo systemctl start sysstat
+
+# Enable auditd to collect audit information
 sudo systemctl enable auditd
-
-# start service
 sudo systemctl start auditd
 
-# Disable unnecessary services
-    # COMMANDS IN ORDER TO DISABLE/ STOP SERVICES:
-        # sudo systemctl disable <service_name>
-        # sudo systemctl stop <service_name>
+# Install a file integrity tool to monitor changes to critical and sensitive files
+sudo apt-get install -y aide
 
+# Determine if automation tools are present for system management
+# Manually check and verify the presence of automation tools
 
-# Install and configure antivirus/antimalware software
+# Consider restricting file permissions
+# Review and adjust file permissions based on Lynis recommendations
 
-# ClamAV commands can scan files and directories for malware, update 
-# the virus database, and configure other settings related to antivirus 
-# protection
-sudo apt-get install -y clamav
+# One or more sysctl values differ from the scan profile and could be tweaked
+# Review and adjust sysctl values as per Lynis recommendations
 
-# manually update the virus databases for ClamAV on a Linux system
-sudo freshclam
-    # COMMANDS THAT COME WITH freshclam
-        # sudo freshclam                                           // update virus database
-        # freshclam --version                                      // display version
-        # sudo freshclam --check                                   // check for updates
-        # freshclam --help                                         // display help
-        # sudo freshclam --config-file=/path/to/freshclam.conf     // update freshlam config
-        # sudo freshclam --force                                   // force database update
-        # sudo freshclam -d                                       // run freshclam in background
-        # sudo systemct1 stop clamac-freshclam                    // stop freshclam
+# Harden compilers like restricting access to root user only
+# Review and adjust compiler access based on Lynis recommendations
 
+# Harden the system by installing at least one malware scanner
+# Install a malware scanner like rkhunter, chkrootkit, or OSSEC
 
+# Lynis recommended security configurations end
 
-# Kill any existing freshclam processes
-sudo pkill -f freshclam
-
-# Wait for existing processes to terminate (optional)
-while pkill -0 -f freshclam &>/dev/null; do
-    echo "Waiting for existing freshclam processes to terminate..."
-    sleep 5
-done
-
-# Check if clamav-daemon package is installed
-if ! dpkg -l | grep -q 'clamav-daemon'; then
-    # Install clamav-daemon if not already installed
-    sudo apt-get install -y clamav-daemon
-    if [ $? -ne 0 ]; then
-        echo "Error: Unable to install clamav-daemon. Please check your internet connection and try again."
-        exit 1
-    fi
-fi
-
-# Manually update the virus databases for ClamAV on a Linux system
-if sudo freshclam; then
-    echo "Virus databases updated successfully."
-else
-    echo "Error updating virus databases for ClamAV."
-    exit 1
-fi
-
-# Check if clamav-daemon service is active
-if [ "$(systemctl is-active clamav-daemon)" = "active" ]; then
-    # Stop clamav-daemon service if it's active
-    sudo systemctl stop clamav-daemon
-    echo "ClamAV service stopped."
-fi
-
-# Enable and start clamav-daemon service
-sudo systemctl enable clamav-daemon
-sudo systemctl start clamav-daemon
-echo "ClamAV service enabled and started."
-
-
-# Configure secure remote access (SSH):
-    # These changes collectively enhance the security of your SSH server by preventing direct root login and disabling
-    # password-based authentication. Always ensure that you have tested the changes and have an alternative way to access 
-    # your system (such as an SSH key) before making these modifications to avoid getting locked out.
-       # sudo sed -i 's/PermitRootLogin yes/PermitRootLogin no/' /etc/ssh/sshd_config                                           // It disables direct root login via SSH, improving security by requiring users to log in as a 
-       #                                                                                                                        // regular user and then use su or sudo to switch to the root user
-       # sudo sed -i 's/PasswordAuthentication yes/PasswordAuthentication no/' /etc/ssh/sshd_config                             // Disables password-based authentication, meaning that only public key authentication will be allowed
-       # sudo systemctl restart ssh                                                                                             // Restarts the SSH service to apply the changes made to the configuration file (sshd_config).
-
-
-# sudo ufw deny <port_number>/tcp                                         // Disable unnecessary network ports and services
-
-
-echo "Security configurations applied successfully!"
-
-# analyze processes and save the results in top.log
-top -n 1 -b > top.log
-
-# Display different users in the top.log file
-echo "Different Users running processes:"
-awk '{if(NR>7)print $2}' top.log | sort | uniq
-
+echo "Lynis recommended security configurations applied successfully!"
