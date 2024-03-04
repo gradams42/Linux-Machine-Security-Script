@@ -141,3 +141,7 @@ sudo apt-get install -y aide
 # Lynis recommended security configurations end
 
 echo "Lynis recommended security configurations applied successfully!"
+
+echo "Installing tools to help utilize Copy and Paste"
+
+sudo apt install open-vm-tools-desktop
