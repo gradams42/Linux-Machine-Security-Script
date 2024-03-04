@@ -7,9 +7,6 @@
       https://cisofy.com/lynis/controls/PKGS-7392/
 
   Suggestions (47):
-  ----------------------------
-  * This release is more than 4 months old. Check the website or GitHub to see if there is an update available. [LYNIS] 
-      https://cisofy.com/lynis/controls/LYNIS/
 
   * Set a password on GRUB boot loader to prevent altering boot configuration (e.g. boot in single user mode without password) [BOOT-5122] 
       https://cisofy.com/lynis/controls/BOOT-5122/

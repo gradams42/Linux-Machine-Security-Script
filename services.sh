@@ -124,5 +124,3 @@ unset grub_password_hash
 chmod +x suggested_fixes.sh
 ./suggested_fixes.sh
 
-
-

@@ -1,4 +1,4 @@
-configure_iptables() {
+iptables() {
   # iptables
   apt install iptables-persistent -y
 
