@@ -27,7 +27,7 @@ sudo apt-get install -y needrestart
 sudo apt-get install -y fail2ban
 
 # Set a password on GRUB boot loader to prevent altering boot configuration
-echo "set superusers=\"root\"\npassword_pbkdf2 root $grub_password" | sudo tee -a /etc/grub.d/40_custom >> "$LOG_FILE" 2>&1 \ || log_error "Failed to set GRUB password"
+echo "set superusers=\"root\"\npassword_pbkdf2 root $grub_password" | sudo tee -a /etc/grub.d/40_custom >> "$LOG_FILE" 2>&1 || log_error "Failed to set GRUB password"
 sudo update-grub >> "$LOG_FILE" 2>&1 || log_error "Failed to update GRUB"
 
 # Consider hardening system services by running '/usr/bin/systemd-analyze security SERVICE' for each service
@@ -116,6 +116,12 @@ sudo apt-get install -y sysstat >> "$LOG_FILE" 2>&1 || log_error "Failed to inst
 sudo systemctl enable sysstat >> "$LOG_FILE" 2>&1 || log_error "Failed to enable sysstat service"
 sudo systemctl start sysstat >> "$LOG_FILE" 2>&1 || log_error "Failed to start sysstat service"
 
+
+# Enable sysstat
+sudo systemctl enable sysstat
+sudo systemctl start sysstat
+
+
 # Enable auditd to collect audit information
 sudo systemctl enable auditd
 sudo systemctl start auditd
@@ -138,6 +144,50 @@ sudo apt-get install -y aide
 # Harden the system by installing at least one malware scanner
 # Install a malware scanner like rkhunter, chkrootkit, or OSSEC
 
+
+
+# Copy fail2ban configuration
+sudo cp /etc/fail2ban/jail.conf /etc/fail2ban/jail.local
+
+# Install PAM module for password strength
+sudo apt-get install -y libpam-cracklib
+
+# Install unattended-upgrades
+sudo apt-get install -y unattended-upgrades
+
+
+# Install AIDE
+sudo apt-get install -y aide
+# Initialize AIDE database
+sudo aideinit
+
+# Run the initial AIDE check
+sudo aide --check
+
+
+# Edit AIDE configuration to use SHA256 or SHA512
+sudo sed -i 's/^@@define HASHFUNC.*/@@define HASHFUNC sha512/' /etc/aide/aide.conf
+
+
+
+# Install needrestart
+sudo apt-get install -y needrestart
+
+# Install rkhunter, a malware scanner
+sudo apt-get install -y rkhunter
+
+
+# Upgrade Lynis
+sudo apt-get install --only-upgrade lynis
+
+# Check and disable unused USB storage drivers
+lsmod | grep usb_storage
+# If present, unload the module
+sudo modprobe -r usb_storage
+
+# Similar steps for Firewire storage
+
+
 # Lynis recommended security configurations end
 
 echo "Lynis recommended security configurations applied successfully!"
@@ -145,3 +195,6 @@ echo "Lynis recommended security configurations applied successfully!"
 echo "Installing tools to help utilize Copy and Paste"
 
 sudo apt install open-vm-tools-desktop
+
+echo "Rebooting to ensure changes"
+sudo reboot
