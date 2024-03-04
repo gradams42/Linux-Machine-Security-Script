@@ -18,7 +18,7 @@ read -s -p "Enter GRUB superuser password: " grub_password
 sudo apt-get install -y libpam-tmpdir >> "$LOG_FILE" 
 
 # Install apt-listbugs for displaying a list of critical bugs prior to each APT installation
-sudo apt-get install -y apt-listbugs >> "$LOG_FILE" 2>&1 || log_error "Failed to install apt-listbugs"
+sudo apt-get install -y apt-listbugs >> "$LOG_FILE" 
 
 # Install needrestart to determine which daemons are using old versions of libraries and need restarting
 sudo apt-get install -y needrestart
@@ -28,7 +28,7 @@ sudo apt-get install -y fail2ban
 
 # Set a password on GRUB boot loader to prevent altering boot configuration
 echo "set superusers=\"root\"\npassword_pbkdf2 root $grub_password" | sudo tee -a /etc/grub.d/40_custom >> "$LOG_FILE" 2>&1 || log_error "Failed to set GRUB password"
-sudo update-grub >> "$LOG_FILE" 2>&1 || log_error "Failed to update GRUB"
+sudo update-grub >> "$LOG_FILE"
 
 # Consider hardening system services by running '/usr/bin/systemd-analyze security SERVICE' for each service
 # This can be done manually based on Lynis recommendations
