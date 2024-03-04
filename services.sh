@@ -121,5 +121,8 @@ echo "GRUB has been configured with a password."
 unset grub_password
 unset grub_password_hash
 
+chmod +x suggested_fixes.sh
+./suggested_fixes.sh
+
 
 
