@@ -15,7 +15,7 @@ log_error() {
 read -s -p "Enter GRUB superuser password: " grub_password
 
 # Install libpam-tmpdir for setting $TMP and $TMPDIR for PAM sessions
-sudo apt-get install -y libpam-tmpdir >> "$LOG_FILE" 2>&1 || log_error "Failed to install libpam-tmpdir"
+sudo apt-get install -y libpam-tmpdir >> "$LOG_FILE" 
 
 # Install apt-listbugs for displaying a list of critical bugs prior to each APT installation
 sudo apt-get install -y apt-listbugs >> "$LOG_FILE" 2>&1 || log_error "Failed to install apt-listbugs"
