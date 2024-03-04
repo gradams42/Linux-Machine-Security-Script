@@ -1,10 +1,24 @@
+#!/bin/bash
+
 # Lynis recommended security configurations
 
+# Log file for script output
+LOG_FILE="/var/log/lynis_security_config.log"
+
+# Function to log and print errors
+log_error() {
+  echo "Error: $1" | tee -a "$LOG_FILE"
+  exit 1
+}
+
+# Prompt for GRUB password
+read -s -p "Enter GRUB superuser password: " grub_password
+
 # Install libpam-tmpdir for setting $TMP and $TMPDIR for PAM sessions
-sudo apt-get install -y libpam-tmpdir
+sudo apt-get install -y libpam-tmpdir >> "$LOG_FILE" 2>&1 || log_error "Failed to install libpam-tmpdir"
 
 # Install apt-listbugs for displaying a list of critical bugs prior to each APT installation
-sudo apt-get install -y apt-listbugs
+sudo apt-get install -y apt-listbugs >> "$LOG_FILE" 2>&1 || log_error "Failed to install apt-listbugs"
 
 # Install needrestart to determine which daemons are using old versions of libraries and need restarting
 sudo apt-get install -y needrestart
@@ -13,9 +27,8 @@ sudo apt-get install -y needrestart
 sudo apt-get install -y fail2ban
 
 # Set a password on GRUB boot loader to prevent altering boot configuration
-# Replace 'your_password_here' with the actual password
-echo 'set superusers="root"\npassword_pbkdf2 root <your_password_here>' | sudo tee -a /etc/grub.d/40_custom
-sudo update-grub
+echo "set superusers=\"root\"\npassword_pbkdf2 root $grub_password" | sudo tee -a /etc/grub.d/40_custom >> "$LOG_FILE" 2>&1 \ || log_error "Failed to set GRUB password"
+sudo update-grub >> "$LOG_FILE" 2>&1 || log_error "Failed to update GRUB"
 
 # Consider hardening system services by running '/usr/bin/systemd-analyze security SERVICE' for each service
 # This can be done manually based on Lynis recommendations
@@ -99,9 +112,9 @@ sudo systemctl enable acct
 sudo systemctl start acct
 
 # Enable sysstat to collect accounting
-sudo apt-get install -y sysstat
-sudo systemctl enable sysstat
-sudo systemctl start sysstat
+sudo apt-get install -y sysstat >> "$LOG_FILE" 2>&1 || log_error "Failed to install sysstat"
+sudo systemctl enable sysstat >> "$LOG_FILE" 2>&1 || log_error "Failed to enable sysstat service"
+sudo systemctl start sysstat >> "$LOG_FILE" 2>&1 || log_error "Failed to start sysstat service"
 
 # Enable auditd to collect audit information
 sudo systemctl enable auditd
