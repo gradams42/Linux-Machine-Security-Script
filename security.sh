@@ -111,20 +111,23 @@ sudo apt-get install -y acct
 sudo systemctl enable acct
 sudo systemctl start acct
 
-# Enable sysstat to collect accounting
+# Install sysstat to collect accounting
 sudo apt-get install -y sysstat >> "$LOG_FILE" 2>&1 || log_error "Failed to install sysstat"
 sudo systemctl enable sysstat >> "$LOG_FILE" 2>&1 || log_error "Failed to enable sysstat service"
 sudo systemctl start sysstat >> "$LOG_FILE" 2>&1 || log_error "Failed to start sysstat service"
 
+# Suggestion to reboot for sysstat
+echo "Reboot is recommended after installing sysstat. Do you want to reboot now? (y/n)"
+read -r reboot_option
 
-# Enable sysstat
-sudo systemctl enable sysstat
-sudo systemctl start sysstat
-
+if [[ $reboot_option == 'y' || $reboot_option == 'Y' ]]; then
+  sudo reboot
+fi
 
 # Enable auditd to collect audit information
 sudo systemctl enable auditd
 sudo systemctl start auditd
+
 
 # Install a file integrity tool to monitor changes to critical and sensitive files
 sudo apt-get install -y aide
@@ -184,6 +187,15 @@ sudo apt-get install --only-upgrade lynis
 lsmod | grep usb_storage
 # If present, unload the module
 sudo modprobe -r usb_storage
+
+
+echo "Reboot is recommended. Do you want to reboot now? (y/n)"
+read -r reboot_option
+
+if [[ $reboot_option == 'y' || $reboot_option == 'Y' ]]; then
+  sudo reboot
+fi
+
 
 # Similar steps for Firewire storage
 
